@@ -5,7 +5,7 @@ import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
-import axios from 'axios';
+import { authFetch } from '../utils/authFetch';
 import dayjs from 'dayjs';
 
 export default function FinanceList({ view, date, tag, onFinanceChanged }) {
@@ -24,19 +24,22 @@ export default function FinanceList({ view, date, tag, onFinanceChanged }) {
     setLoading(true);
     let url = `/api/finances/?date=${date.format('YYYY-MM-DD')}`;
     if (tag) url += `&tag=${encodeURIComponent(tag)}`;
-    axios.get(url)
-      .then(res => setItems(res.data))
+    authFetch(url)
+      .then(async res => setItems(await res.json()))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, [view, date, tag, onFinanceChanged]);
 
   const handleAdd = async () => {
     if (!desc || !value) return;
-    await axios.post('/api/finances/', {
-      description: desc,
-      value: parseFloat(value),
-      tags,
-      created_at: date.format('YYYY-MM-DD'),
+    await authFetch('/api/finances/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: desc,
+        value: parseFloat(value),
+        tags
+      })
     });
     setDesc(''); setValue(''); setTags('');
     setModalOpen(false);
@@ -44,7 +47,7 @@ export default function FinanceList({ view, date, tag, onFinanceChanged }) {
   };
 
   const handleDelete = async (item) => {
-    await axios.delete(`/api/finances/${item.id}/`);
+    await authFetch(`/api/finances/${item.id}/`, { method: 'DELETE' });
     onFinanceChanged && onFinanceChanged();
   };
 
@@ -68,10 +71,14 @@ export default function FinanceList({ view, date, tag, onFinanceChanged }) {
 
   const handleEditSave = async () => {
     if (!desc || !value) return;
-    await axios.patch(`/api/finances/${editItem.id}/`, {
-      description: desc,
-      value: parseFloat(value),
-      tags,
+    await authFetch(`/api/finances/${editItem.id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: desc,
+        value: parseFloat(value),
+        tags
+      })
     });
     setEditModalOpen(false);
     setEditItem(null);
