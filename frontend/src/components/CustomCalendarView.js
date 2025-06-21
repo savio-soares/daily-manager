@@ -23,7 +23,7 @@ function getWeekDays(date) {
 }
 
 export default function CustomCalendarView({ view, setView, date, setDate, dayProgress, onTaskCreated, onTaskChanged, onFinanceChanged, isFinance }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState({ open: false, date: null });
   // Memoiza os dias para performance
   const days = useMemo(() => {
     if (view === 'month') return getMonthDays(date);
@@ -99,7 +99,7 @@ export default function CustomCalendarView({ view, setView, date, setDate, dayPr
             variant="outlined"
             color="inherit"
             startIcon={<AddIcon />}
-            onClick={() => setOpen(true)}
+            onClick={() => setOpen({ open: true, date })}
             sx={{
               borderColor: '#888',
               color: '#fff',
@@ -117,15 +117,15 @@ export default function CustomCalendarView({ view, setView, date, setDate, dayPr
           </Button>
         </Box>
       )}
-      <Dialog open={open.open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={open.open} onClose={() => setOpen({ open: false, date: null })} maxWidth="sm" fullWidth>
         <DialogTitle>Adicionar Tarefa</DialogTitle>
         <DialogContent>
           {!isFinance && (
-            <TaskForm key={open.open ? 'open' : 'closed'} onTaskCreated={() => { setOpen(false); onTaskCreated && onTaskCreated(); onTaskChanged && onTaskChanged(); }} date={open.date} editMode />
+            <TaskForm key={open.open ? 'open' : 'closed'} onTaskCreated={() => { setOpen({ open: false, date: null }); onTaskCreated && onTaskCreated(); onTaskChanged && onTaskChanged(); }} date={open.date} editMode />
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setOpen({ open: false, date: null })}>Cancelar</Button>
         </DialogActions>
       </Dialog>
     </Box>

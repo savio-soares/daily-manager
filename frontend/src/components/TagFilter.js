@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Chip, Typography, Stack } from '@mui/material';
-import axios from 'axios';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Filtro visual de tags. Mostra todas as tags das tarefas visíveis e permite filtrar.
@@ -15,10 +15,12 @@ export default function TagFilter({ view, date, tag, onTagChange }) {
   useEffect(() => {
     // Busca tarefas para extrair as tags únicas
     let url = `/api/tasks/?view=${view}&date=${date.format('YYYY-MM-DD')}`;
-    axios.get(url).then(res => {
-      const allTags = res.data.flatMap(t => t.tags ? t.tags.split(',').map(s => s.trim()) : []);
-      setTags([...new Set(allTags)].filter(Boolean));
-    });
+    authFetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const allTags = data.flatMap(t => t.tags ? t.tags.split(',').map(s => s.trim()) : []);
+        setTags([...new Set(allTags)].filter(Boolean));
+      });
   }, [view, date]);
 
   return (
