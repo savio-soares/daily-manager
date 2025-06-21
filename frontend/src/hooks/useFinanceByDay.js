@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import dayjs from 'dayjs';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Hook para buscar o total de gastos por dia do mês atual.
@@ -13,12 +13,12 @@ export default function useFinanceByDay(monthDate, refresh = 0) {
   useEffect(() => {
     const start = monthDate.startOf('month').format('YYYY-MM-DD');
     const end = monthDate.endOf('month').format('YYYY-MM-DD');
-    axios.get(`/api/finances/by_day/?start=${start}&end=${end}`)
-      .then(res => {
+    authFetch(`/api/finances/by_day/?start=${start}&end=${end}`)      .then(res => res.json())
+      .then(data => {
         // Backend retorna array de objetos {created_at__date, total}
         // Transformar em { 'YYYY-MM-DD': valor }
         const map = {};
-        res.data.forEach(item => {
+        data.forEach(item => {
           map[item.created_at__date] = parseFloat(item.total);
         });
         setFinance(map);

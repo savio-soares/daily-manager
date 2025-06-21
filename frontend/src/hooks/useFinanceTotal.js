@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import dayjs from 'dayjs';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Hook para buscar o total de gastos por semana ou mês.
@@ -20,10 +20,10 @@ export default function useFinanceTotal(type, date, refresh = 0) {
       start = date.startOf('month').format('YYYY-MM-DD');
       end = date.endOf('month').format('YYYY-MM-DD');
     }
-    axios.get(`/api/finances/by_day/?start=${start}&end=${end}`)
-      .then(res => {
+    authFetch(`/api/finances/by_day/?start=${start}&end=${end}`)      .then(res => res.json())
+      .then(data => {
         let sum = 0;
-        res.data.forEach(item => {
+        data.forEach(item => {
           sum += parseFloat(item.total);
         });
         setTotal(sum);
