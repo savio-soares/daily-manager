@@ -224,8 +224,7 @@ USE_TZ = True   # Uso de timezones
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/' # Caminho para arquivos estáticos
-
+STATIC_URL = '/static/' # Caminho para arquivos estáticos (corrigido para barra inicial)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Caminho para arquivos estáticos coletados
 
 
@@ -252,23 +251,9 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Configuração do CORS para aceitar requisições do frontend hospedado no Render
+# Configuração do CORS para aceitar requisições do frontend hospedado no Render e localmente
 CORS_ALLOWED_ORIGINS = [
-    'https://SEU-FRONTEND.onrender.com',  # Substitua pelo domínio real do seu frontend
-]
-
-# Para facilitar o deploy, você pode usar variáveis de ambiente:
-import environ
-
-env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-# Exemplo de uso:
-# CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['https://SEU-FRONTEND.onrender.com'])
-# SECRET_KEY = env('SECRET_KEY', default=SECRET_KEY)
-# DEBUG = env.bool('DEBUG', default=DEBUG)
-
-# Quando souber o domínio do frontend, substitua abaixo:
-CORS_ALLOWED_ORIGINS = [
-    'https://daily-manager-frontend.onrender.com',  # Exemplo: ajuste para o domínio real do seu frontend
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://daily-manager-frontend.onrender.com',
 ]
