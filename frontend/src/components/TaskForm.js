@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Stack, Chip } from '@mui/material';
-import axios from 'axios';
 import dayjs from 'dayjs';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Formulário para adicionar nova tarefa com tags.
@@ -38,25 +38,32 @@ export default function TaskForm({ onTaskCreated, date, editMode = false, initia
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = {
+        title,
+        description,
+        tags: tags.join(','),
+        created_at: selectedDate.format('YYYY-MM-DD'),
+      };
+      let response;
       if (editMode && initialData) {
-        await axios.patch(`/api/tasks/${initialData.id}/`, {
-          title,
-          description,
-          tags: tags.join(','),
-          created_at: selectedDate.format('YYYY-MM-DD'),
+        response = await authFetch(`/api/tasks/${initialData.id}/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
-        onTaskCreated && onTaskCreated();
-        onClose && onClose();
       } else {
-        await axios.post('/api/tasks/', {
-          title,
-          description,
-          tags: tags.join(','),
-          created_at: selectedDate.format('YYYY-MM-DD'),
+        response = await authFetch('/api/tasks/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
-        setTitle(''); setDescription(''); setTags([]); setTagInput(''); setSelectedDate(date);
-        onTaskCreated && onTaskCreated();
       }
+      if (!response.ok) throw new Error('Erro ao salvar tarefa');
+      if (!editMode) {
+        setTitle(''); setDescription(''); setTags([]); setTagInput(''); setSelectedDate(date);
+      }
+      onTaskCreated && onTaskCreated();
+      onClose && onClose();
     } catch (err) {
       // Se der erro, não limpa lista
     } finally {
