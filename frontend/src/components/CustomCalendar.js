@@ -1,0 +1,1 @@
+// Este arquivo foi removido pois o calendário customizado foi implementado em CustomCalendarView.js
