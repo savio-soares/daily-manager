@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
+import { authFetch } from '../utils/authFetch';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -12,7 +13,7 @@ function Login({ onLogin }) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/token/', {
+      const response = await authFetch('/api/token/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
