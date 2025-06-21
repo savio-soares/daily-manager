@@ -5,5 +5,8 @@ export function authFetch(url, options = {}) {
     ...(options.headers || {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-  return fetch(url, { ...options, headers });
+  // Usa a variável de ambiente para a base da API
+  const baseUrl = process.env.REACT_APP_API_URL || '';
+  const fullUrl = url.startsWith('http') ? url : baseUrl + url;
+  return fetch(fullUrl, { ...options, headers });
 }

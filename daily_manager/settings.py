@@ -118,7 +118,12 @@ SECRET_KEY = 'django-insecure-zt$4mi3%4p((lf9%kvrvpqqa$)@dn&1)civ5-xocv^)5!yx5j0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS para produção e local
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',  # Permite qualquer subdomínio do Render
+]
 
 
 # Application definition
@@ -132,6 +137,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles', # Arquivos estáticos (CSS, JS, imagens)
     'rest_framework', # Django REST Framework para criar APIs
     'rest_framework_simplejwt', # JWT para autenticação
+    'corsheaders', # Adiciona suporte a CORS
     'tasks', # App de tarefas diárias criado pelo usuário
 ]
 
@@ -143,6 +149,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware', # Autenticação
     'django.contrib.messages.middleware.MessageMiddleware', # Mensagens
     'django.middleware.clickjacking.XFrameOptionsMiddleware', # Proteção clickjacking
+    'corsheaders.middleware.CorsMiddleware', # Middleware do CORS (deve ser o primeiro)
 ]
 
 ROOT_URLCONF = 'daily_manager.urls' # Arquivo principal de rotas (urls.py)
@@ -237,3 +244,24 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Configuração do CORS para aceitar requisições do frontend hospedado no Render
+CORS_ALLOWED_ORIGINS = [
+    'https://SEU-FRONTEND.onrender.com',  # Substitua pelo domínio real do seu frontend
+]
+
+# Para facilitar o deploy, você pode usar variáveis de ambiente:
+import environ
+
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Exemplo de uso:
+# CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['https://SEU-FRONTEND.onrender.com'])
+# SECRET_KEY = env('SECRET_KEY', default=SECRET_KEY)
+# DEBUG = env.bool('DEBUG', default=DEBUG)
+
+# Quando souber o domínio do frontend, substitua abaixo:
+CORS_ALLOWED_ORIGINS = [
+    'https://daily-manager-frontend.onrender.com',  # Exemplo: ajuste para o domínio real do seu frontend
+]
