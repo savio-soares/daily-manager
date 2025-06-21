@@ -175,11 +175,18 @@ WSGI_APPLICATION = 'daily_manager.wsgi.application' # Arquivo WSGI para deploy
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import environ
+import dj_database_url
+
+# Inicializa o django-environ
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Configuração do banco de dados para produção (PostgreSQL via DATABASE_URL)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Usando SQLite por padrão (simples para testes)
-        'NAME': BASE_DIR / 'db.sqlite3', # Caminho do banco
-    }
+    'default': dj_database_url.config(
+        default=env('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'))
+    )
 }
 
 
