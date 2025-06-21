@@ -22,7 +22,7 @@ export default function FinanceList({ view, date, tag, onFinanceChanged }) {
 
   useEffect(() => {
     setLoading(true);
-    let url = `/api/finances/?view=${view}&date=${date.format('YYYY-MM-DD')}`;
+    let url = `/api/finances/?date=${date.format('YYYY-MM-DD')}`;
     if (tag) url += `&tag=${encodeURIComponent(tag)}`;
     axios.get(url)
       .then(res => setItems(res.data))

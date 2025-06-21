@@ -3,7 +3,7 @@ import { List, ListItem, ListItemText, Chip, Box, Typography, CircularProgress, 
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import axios from 'axios';
+import { authFetch } from '../utils/authFetch';
 import dayjs from 'dayjs';
 import EditTaskModal from './EditTaskModal';
 
@@ -35,14 +35,19 @@ export default function TaskList({ view, date, tag, filter, onTaskChanged }) {
       url = `/api/tasks/?view=${view}&date=${dateParam.format('YYYY-MM-DD')}`;
       if (tag) url += `&tag=${encodeURIComponent(tag)}`;
     }
-    axios.get(url)
-      .then(res => setTasks(res.data))
+    authFetch(url)
+      .then(res => res.json())
+      .then(data => setTasks(data))
       .catch(() => setTasks([]))
       .finally(() => setLoading(false));
   }, [view, date, tag, filter]);
 
   const handleToggleComplete = async (task) => {
-    await axios.patch(`/api/tasks/${task.id}/`, { is_completed: !task.is_completed });
+    await authFetch(`/api/tasks/${task.id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_completed: !task.is_completed })
+    });
     setTasks(tasks => tasks.map(t => t.id === task.id ? { ...t, is_completed: !t.is_completed, completed_at: !t.is_completed ? dayjs().toISOString() : null } : t));
     if (onTaskChanged) onTaskChanged(); // Notifica o App para atualizar progresso
   };
@@ -58,7 +63,7 @@ export default function TaskList({ view, date, tag, filter, onTaskChanged }) {
   };
 
   const handleDelete = async () => {
-    await axios.delete(`/api/tasks/${menuTask.id}/`);
+    await authFetch(`/api/tasks/${menuTask.id}/`, { method: 'DELETE' });
     setTasks(tasks => tasks.filter(t => t.id !== menuTask.id));
     handleMenuClose();
   };
@@ -143,14 +148,14 @@ export default function TaskList({ view, date, tag, filter, onTaskChanged }) {
         onTaskEdited={() => {
           setEditModalOpen(false);
           setMenuTask(null);
-          // Atualiza lista após editar
           setLoading(true);
           let dateParam = date;
           if (view === 'month') dateParam = date.startOf('month');
           let url = `/api/tasks/?view=${view}&date=${dateParam.format('YYYY-MM-DD')}`;
           if (tag) url += `&tag=${encodeURIComponent(tag)}`;
-          axios.get(url)
-            .then(res => setTasks(res.data))
+          authFetch(url)
+            .then(res => res.json())
+            .then(data => setTasks(data))
             .catch(() => setTasks([]))
             .finally(() => setLoading(false));
         }}
