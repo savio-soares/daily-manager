@@ -135,31 +135,37 @@ class TaskViewSet(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        print('DEBUG: Entrou no método list do TaskViewSet')
-        # Suporte ao progresso diário
-        if request.query_params.get('progress_by_day') == '1':
-            start = request.query_params.get('start')
-            end = request.query_params.get('end')
-            qs = self.get_queryset()
-            from django.utils import timezone
-            if start and end:
-                qs = qs.filter(created_at__date__range=[start, end])
-            # DEBUG: loga as datas locais de criação das tarefas filtradas
-            print('DEBUG tarefas filtradas:', [timezone.localtime(t.created_at) for t in qs])
-            # Agrupa por dia de criação (timezone local)
-            from collections import defaultdict
-            total = defaultdict(int)
-            done = defaultdict(int)
-            for t in qs:
-                key = timezone.localtime(t.created_at).strftime('%Y-%m-%d')
-                total[key] += 1
-                if t.is_completed:
-                    done[key] += 1
-            result = {}
-            for k in total:
-                result[k] = done[k] / total[k] if total[k] else 0
-            return Response(result)
-        return super().list(request, *args, **kwargs)
+        # Log amigável para produção
+        print(f'[TaskViewSet] list chamada por: {request.user} | params: {request.query_params}')
+        try:
+            # Suporte ao progresso diário
+            if request.query_params.get('progress_by_day') == '1':
+                start = request.query_params.get('start')
+                end = request.query_params.get('end')
+                qs = self.get_queryset()
+                from django.utils import timezone
+                if start and end:
+                    qs = qs.filter(created_at__date__range=[start, end])
+                # Agrupa por dia de criação (timezone local)
+                from collections import defaultdict
+                total = defaultdict(int)
+                done = defaultdict(int)
+                for t in qs:
+                    key = timezone.localtime(t.created_at).strftime('%Y-%m-%d')
+                    total[key] += 1
+                    if t.is_completed:
+                        done[key] += 1
+                result = {}
+                for k in total:
+                    result[k] = done[k] / total[k] if total[k] else 0
+                # Garante retorno 200 com objeto vazio se não houver dados
+                return Response(result, status=200)
+            # Caso padrão: lista tarefas normalmente
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            # Loga erro para debug online
+            print(f'[TaskViewSet] ERRO: {e}')
+            return Response({'detail': 'Erro ao processar requisição.'}, status=500)
 
 # Permitir acesso público ao endpoint de login
 class PublicTokenObtainPairView(TokenObtainPairView):
