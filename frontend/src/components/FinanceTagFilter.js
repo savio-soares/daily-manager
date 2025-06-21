@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Chip, Typography, Stack } from '@mui/material';
-import axios from 'axios';
+import { authFetch } from '../utils/authFetch';
 
 /**
  * Filtro visual de tags de gastos. Mostra todas as tags dos gastos visíveis e permite filtrar.
@@ -14,11 +14,13 @@ export default function FinanceTagFilter({ view, date, tag, onTagChange }) {
 
   useEffect(() => {
     // Busca gastos para extrair as tags únicas
-    let url = `/api/finances/?view=${view}&date=${date.format('YYYY-MM-DD')}`;
-    axios.get(url).then(res => {
-      const allTags = res.data.flatMap(f => f.tags ? f.tags.split(',').map(s => s.trim()) : []);
-      setTags([...new Set(allTags)].filter(Boolean));
-    });
+    let url = `/api/finances/?date=${date.format('YYYY-MM-DD')}`;
+    authFetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const allTags = data.flatMap(f => f.tags ? f.tags.split(',').map(s => s.trim()) : []);
+        setTags([...new Set(allTags)].filter(Boolean));
+      });
   }, [view, date]);
 
   return (
